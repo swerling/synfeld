@@ -4,7 +4,7 @@ synfeld
 
 == DESCRIPTION:
 
-Synfeld is a web application framework that does almost nothing, and it ain't all that classy.  
+Synfeld is a web application framework that does practically nothing, and it ain't all that classy.  
 
 Basically this is just a tiny wrapper for the Rack::Router (see http://github.com/carllerche/rack-router)
 
@@ -79,7 +79,7 @@ Actions are expected to side-effect the :status_code, :headers, and :body. As a 
 string, it is assumed that that string is the :body. An exception is thrown if the :body is not set to something.
 
 That's it. Really not much to see here.  Just gives you a thread-safe rack-based web framework that consists of
-nothing but a router.
+little more than a router.
 
 == PROBLEMS
 
