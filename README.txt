@@ -4,7 +4,7 @@ synfeld
 
 == DESCRIPTION:
 
-Synfeld is a web application framework that does practically nothing, and it ain't all that classy.  
+Synfeld is a web application framework that does practically nothing.
 
 Basically this is just a tiny wrapper for the Rack::Router (see http://github.com/carllerche/rack-router)
 
