@@ -87,18 +87,14 @@ None known.
 
 == REQUIREMENTS:
 
-* rack
-* Rack::Router (the rack-router gem), see http://github.com/carllerche/rack-router
+* ruby, rubygems, rack, rack-router
+* For rack-router, see http://github.com/carllerche/rack-router
 
 == INSTALL:
 
-* first install rack and rack-router
-* gem install synfeld
+  first install rack, rack-router
 
-== Acknowledgements:
-
-rack and rack-router were used, obviously.
-'bones' used for gem generation.
+  gem install swerling-cosell --source http://gems.github.com
 
 == LICENSE:
 
