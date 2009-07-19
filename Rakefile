@@ -31,15 +31,24 @@ PROJ.rdoc.exclude = ["^tasks/setup\.rb$", "lib/synfeld_info.rb"]
 PROJ.spec.opts << '--color'
 
 task :default => 'spec:run'
-namespace :my do
-  namespace :gem do
-    task :package => [:clobber] do
-      this_dir = File.join(File.dirname(__FILE__))
-      sh "rm -rf #{File.join(this_dir, 'pkg')}"
-      sh "rm -rf #{File.join(this_dir, 'doc')}"
-      sh "cp #{File.join(this_dir, 'README.txt')} #{File.join(this_dir, 'README.rdoc')} "
-      Rake::Task['gem:package'].invoke
-    end
-  end
+task :myclobber => [:clobber] do
+  mydir = File.join(File.dirname(__FILE__))
+  sh "rm -rf #{File.join(mydir, 'pkg')}"
+  sh "rm -rf #{File.join(mydir, 'doc')}"
+  sh "rm -rf #{File.join(mydir, 'ext/*.log')}"
+  sh "rm -rf #{File.join(mydir, 'ext/*.o')}"
+  sh "rm -rf #{File.join(mydir, 'ext/*.so')}"
+  sh "rm -rf #{File.join(mydir, 'ext/Makefile')}"
+  sh "rm -rf #{File.join(mydir, 'ext/Makefile')}"
 end
-
+task :mypackage => [:myclobber] do
+  Rake::Task['gem:package'].invoke
+end
+task :mydoc => [:myclobber] do
+  mydir = File.join(File.dirname(__FILE__))
+  sh "cp #{File.join(mydir, 'README.txt')} #{File.join(mydir, 'README.rdoc')}"
+  Rake::Task['doc'].invoke
+end
+task :mygemspec => [:myclobber] do
+  Rake::Task['gem:spec'].invoke
+end
