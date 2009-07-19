@@ -94,7 +94,7 @@ None known.
 
   first install rack, rack-router
 
-  gem install swerling-cosell --source http://gems.github.com
+  gem install swerling-synfeld --source http://gems.github.com
 
 == LICENSE:
 
