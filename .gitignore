@@ -1,4 +1,5 @@
 pkg/
+rdoc/
 doc/
 ext/Makefile
 ext/mkmf.log
