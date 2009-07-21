@@ -19,7 +19,7 @@ module Synfeld
   #      The params that the matching Rack::Router route set.
   #
   class App
-    attr_accessor :response, :params, :env, :logger
+    attr_accessor :response, :params, :env, :root_dir, :logger
 
     # Options:
     #   :logger => where to log to.
@@ -27,6 +27,9 @@ module Synfeld
     #              can pass that logger in if you want). Default: Logger.new(STDOUT)
     def initialize(opts = {})
       @logger = opts[:logger] || Logger.new(STDOUT)
+      @root_dir = opts[:root_dir] 
+      raise "You have to pass in the location of the 'root_dir', where all the files in your synfeld app are located" if self.root_dir.nil?
+      #Haml::Template.options[:format] = :html5
     end
     
     # the router for this Synfeld::App. Subclasses are _required_ to override this.
@@ -88,8 +91,54 @@ module Synfeld
       end
 
       # :startdoc:
-  end
-end
+
+      def render(fn)
+        full_fn = fn
+        full_fn = File.join(self.root_dir, fn) unless File.exist?(full_fn)
+        raise "Could not find file '#{fn}' (looked in '#{self.root_dir}')" unless File.exist?(full_fn)
+        ext = fn.split('.').last.downcase
+        case ext
+        when 'html'; return serve_html(full_fn)
+        when 'haml'; return serve_haml(full_fn)
+        else raise "Unrecognized file type: '#{ext}'";
+        end
+      end
+
+      def serve_html(fn)
+        File.read(fn)
+      end
+
+      def serve_haml(fn)
+        Haml::Engine.new(File.read(fn)).render
+      end
+
+      def content_type!(ext)
+        case ext.downcase
+        when 'js'; t = 'text/javascript'
+        when 'css'; t = 'text/css'
+        when 'png'; t = 'image/png'
+        when 'gif'; t = 'image/gif'
+        when 'jpg'; t = 'image/jpeg'
+        when 'jpeg'; t = 'image/jpeg'
+        end
+        (self.response[:headers]['Content-Type'] = t) if t
+      end
+
+      def no_route
+        fn = File.expand_path(File.join(root_dir, self.env['REQUEST_URI']))
+        puts fn
+        if File.exist?(fn) and not File.directory?(fn)
+          self.content_type!(fn.split('.').last)
+          File.read(fn)
+        else
+          self.response[:body] = "route not found for: '#{self.env['REQUEST_URI']}'"
+          self.response[:status_code] = 404
+        end
+      end
+
+  end # class App
+
+end # mod Synfeld
 
 
 
