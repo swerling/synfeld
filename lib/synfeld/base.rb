@@ -39,7 +39,10 @@ module Synfeld
     end
 
     # Alias for #router
-    def as_rack_app; self.router; end # alias_method doesn't seem to work here (it doesnt call the subclass)
+    def as_rack_app
+      self.router
+      # TODO: add the no_route handler here. But waiting for rack-router to settle this issue.
+    end 
 
     # The rack #call method
     def call(env)
@@ -112,18 +115,6 @@ module Synfeld
         Haml::Engine.new(File.read(fn)).render
       end
 
-      def content_type!(ext)
-        case ext.downcase
-        when 'js'; t = 'text/javascript'
-        when 'css'; t = 'text/css'
-        when 'png'; t = 'image/png'
-        when 'gif'; t = 'image/gif'
-        when 'jpg'; t = 'image/jpeg'
-        when 'jpeg'; t = 'image/jpeg'
-        end
-        (self.response[:headers]['Content-Type'] = t) if t
-      end
-
       def no_route
         fn = File.expand_path(File.join(root_dir, self.env['REQUEST_URI']))
         puts fn
@@ -134,6 +125,18 @@ module Synfeld
           self.response[:body] = "route not found for: '#{self.env['REQUEST_URI']}'"
           self.response[:status_code] = 404
         end
+      end
+
+      def content_type!(ext)
+        case ext.downcase
+        when 'js'; t = 'text/javascript'
+        when 'css'; t = 'text/css'
+        when 'png'; t = 'image/png'
+        when 'gif'; t = 'image/gif'
+        when 'jpg'; t = 'image/jpeg'
+        when 'jpeg'; t = 'image/jpeg'
+        end
+        (self.response[:headers]['Content-Type'] = t) if t
       end
 
   end # class App

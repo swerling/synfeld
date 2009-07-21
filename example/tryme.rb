@@ -14,7 +14,7 @@ class TryMe < Synfeld::App
       r.map "/my/special/route",         :get, :to => self, :with => { :action => "my_special_route" }
       r.map "/html_test",                :get, :to => self, :with => { :action => "html_test" }
       r.map "/haml_test",                :get, :to => self, :with => { :action => "haml_test" }
-      r.map "/:anything_else",           :get, :to => self, :with => { :action => "no_route" }
+      r.map "/:anything_else",           :get, :to => self, :with => { :action => "no_route" } #TODO: add this automatically in Synfeld::App
       r.map "/",                         :get, :to => self, :with => { :action => "home" }
     end
   end
