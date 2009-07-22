@@ -1,10 +1,10 @@
-require File.expand_path(File.dirname(__FILE__), '../lib/synfeld.rb')
+require File.expand_path(File.join(File.dirname(__FILE__), '../lib/synfeld.rb'))
 require 'haml'
 
 class TryMe < Synfeld::App
 
   def initialize
-    super(:root_dir => File.expand_path(File.dirname(__FILE__), 'public'),
+    super(:root_dir => File.expand_path(File.join(File.dirname(__FILE__), 'public')),
           :logger => Logger.new(STDOUT))
   end
 
