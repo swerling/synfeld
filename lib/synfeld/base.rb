@@ -132,7 +132,7 @@ module Synfeld
           begin
             require 'haml'
           rescue LoadError => x
-            return self.whine "Haml is not installed, required in order to render '#{fn}'"
+            return self.whine("Haml is not installed, required in order to render '#{fn}'")
           end
         end
 
@@ -145,7 +145,7 @@ module Synfeld
           begin
             require 'erb'
           rescue LoadError => x
-            return self.whine "Erb is not installed, required in order to render '#{fn}'"
+            return self.whine("Erb is not installed, required in order to render '#{fn}'")
           end
         end
 
