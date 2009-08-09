@@ -95,40 +95,48 @@ module Synfeld
 
       # :startdoc:
 
-      def render(fn)
+      def serve(fn, local = {})
         full_fn = fn
         full_fn = File.join(self.root_dir, fn) unless File.exist?(full_fn)
-        raise "Could not find file '#{fn}' (looked in '#{self.root_dir}')" unless File.exist?(full_fn)
-        ext = fn.split('.').last.downcase
-        case ext
-        when 'html'; return serve_html(full_fn)
-        when 'haml'; return serve_haml(full_fn)
-        else raise "Unrecognized file type: '#{ext}'";
+        if File.exist?(full_fn)
+          ext = fn.split('.').last.downcase
+
+          self.content_type!(ext)
+
+          case ext
+          when 'html'; return serve_html(full_fn)
+          when 'haml'; return serve_haml(full_fn, local)
+          else raise "Unrecognized file type: '#{ext}'";
+          end
+        else
+          raise "Could not find file '#{fn}' (full path '#{full_fn}')" 
         end
+
       end
 
       def serve_html(fn)
         File.read(fn)
       end
 
-      def serve_haml(fn)
-        Haml::Engine.new(File.read(fn)).render
+      def serve_haml(fn, locals = {})
+        Haml::Engine.new(File.read(fn) ).render(Object.new, locals)
       end
 
-      def no_route
+      def handle_static
         fn = File.expand_path(File.join(root_dir, self.env['REQUEST_URI']))
-        puts fn
+        #puts fn # dbg
         if File.exist?(fn) and not File.directory?(fn)
           self.content_type!(fn.split('.').last)
           File.read(fn)
         else
-          self.response[:body] = "route not found for: '#{self.env['REQUEST_URI']}'"
-          self.response[:status_code] = 404
+          return self.no_route
         end
       end
 
       def content_type!(ext)
         case ext.downcase
+        when 'html'; t = 'text/html'
+        when 'haml'; t = 'text/html'
         when 'js'; t = 'text/javascript'
         when 'css'; t = 'text/css'
         when 'png'; t = 'image/png'
@@ -137,6 +145,11 @@ module Synfeld
         when 'jpeg'; t = 'image/jpeg'
         end
         (self.response[:headers]['Content-Type'] = t) if t
+      end
+
+      def no_route
+          self.response[:body] = "route not found for: '#{self.env['REQUEST_URI']}'"
+          self.response[:status_code] = 404
       end
 
   end # class App

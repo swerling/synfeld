@@ -10,41 +10,62 @@ Synfeld is a web application framework that does practically nothing.
 
 Basically this is just a tiny wrapper for the Rack::Router (see http://github.com/carllerche/rack-router)
 
+
 Very alpha-ish stuff here. Seems to work though.
 
 == SYNOPSIS:
 
 Here is an example Synfeld application (foo_app.rb):
 
-  require 'synfeld'
+  require File.expand_path(File.join(File.dirname(__FILE__), '../lib/synfeld.rb'))
+  require 'haml'
 
-  class FooApp < Synfeld::App
+  class TryMe < Synfeld::App
+
+    def initialize
+      super(:root_dir => File.expand_path(File.join(File.dirname(__FILE__), 'public')),
+            :logger => Logger.new(STDOUT))
+    end
 
     def router
-      @router ||= Rack::Router.new(nil, {}) do |r|
-        r.map "/yip/",               :get, :to => self, :with => { :action => "yip" }
-        r.map "/yap/:yap_variable",  :get, :to => self, :with => { :action => "yapfoo" }
-        r.map "/yap/",               :get, :to => self, :with => { :action => "yap" }
-        r.map "/:anything",          :get, :to => self, :with => { :action => "no_route" }
-        r.map "/",                   :get, :to => self, :with => { :action => "home" }
+      return @router ||= Rack::Router.new(nil, {}) do |r|
+        r.map "/yap/:yap_variable",        :get, :to => self, :with => { :action => "yap" }
+        r.map "/my/special/route",         :get, :to => self, :with => { :action => "my_special_route" }
+        r.map "/html_test",                :get, :to => self, :with => { :action => "html_test" }
+        r.map "/haml_test",                :get, :to => self, :with => { :action => "haml_test" }
+
+        r.map "/:anything_else",           :get, :to => self, :with => { :action => "handle_static" } 
+        r.map "/",                         :get, :to => self, :with => { :action => "home" }
       end
     end
 
-    def yip; "yip"; end
-    def yap; "yap"; end
-    def home; "home"; end
-
-    def no_route
-      # Note: 'self.env' is the rack env
-      self.response[:body] = "route not found for: '#{self.env['REQUEST_URI']}'"
-      self.response[:status_code] = 404
+    def home
+      render('home.haml')
     end
 
-    def yapfoo
-      "yapfoo, #{self.params[:yap_variable]}"
+    def my_special_route
+      self.response[:body] = "I'm special"
     end
+
+    def yap
+      "yap, #{self.params[:yap_variable]}"
+    end
+
+    # static files looked up relative to the root directory
+    # specified in initialize
+    def html_test 
+      render('html_test.html') 
+    end
+
+    def haml_test 
+      render('haml_test.haml')
+    end
+
+    #------------
+
 
   end
+
 
 And here is an example rack config, foo_app.ru:
 
