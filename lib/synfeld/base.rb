@@ -93,6 +93,13 @@ module Synfeld
         [response[:status_code], response[:headers], response[:body]]
       end
 
+      # send an error message to the log prepended by "Synfeld: " 
+      def whine msg
+        logger.error("Synfeld laments: " + msg)
+        return msg
+      end
+
+
       # :startdoc:
 
       def serve(fn, local = {})
@@ -106,6 +113,7 @@ module Synfeld
           case ext
           when 'html'; return serve_html(full_fn)
           when 'haml'; return serve_haml(full_fn, local)
+          when 'erb';  return serve_erb(full_fn, local)
           else raise "Unrecognized file type: '#{ext}'";
           end
         else
@@ -119,7 +127,36 @@ module Synfeld
       end
 
       def serve_haml(fn, locals = {})
+
+        if not defined? Haml
+          begin
+            require 'haml'
+          rescue LoadError => x
+            return self.whine "Haml is not installed, required in order to render '#{fn}'"
+          end
+        end
+
         Haml::Engine.new(File.read(fn) ).render(Object.new, locals)
+      end
+
+      def serve_erb(fn, locals = {})
+
+        if not defined? Erb
+          begin
+            require 'erb'
+          rescue LoadError => x
+            return self.whine "Erb is not installed, required in order to render '#{fn}'"
+          end
+        end
+
+        template = ERB.new File.read(fn)
+
+        bind = binding
+        locals.each do |n,v| 
+          raise "Locals must be symbols. Not a symbol: #{n.inspect}" unless n.is_a?(Symbol) 
+          eval("#{n} = locals[:#{n}]", bind)
+        end
+        template.result(bind)
       end
 
       def handle_static
