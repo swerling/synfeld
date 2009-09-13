@@ -69,28 +69,33 @@ module Synfeld
       # :stopdoc:
 
       def _call(env)
-        start_time = Time.now.to_f 
+        begin
+          start_time = Time.now.to_f 
+          @env = env
+          @params = env['rack_router.params']
+          @response = {
+            :status_code => 200,
+            :headers => {'Content-Type' => 'text/html'},
+            :body => nil
+          }
 
-        @env = env
-        @params = env['rack_router.params']
-        @response = {
-          :status_code => 200,
-          :headers => {'Content-Type' => 'text/html'},
-          :body => nil
-        }
+          action = self.action
+          if self.respond_to?(action)
+            body = self.send(self.action)
+          else
+            body = theres_no_action
+          end
 
-        action = self.action
-        if self.respond_to?(action)
-          body = self.send(self.action)
-        else
-          body = theres_no_action
+          response[:body] = body if body.is_a?(String)
+          raise "You have to set the response body" if response[:body].nil?
+
+          logger.debug("It took #{Time.now.to_f - start_time} sec for #{self.class} to handle request.")
+          [response[:status_code], response[:headers], Array(response[:body])]
+        rescue Exception => e
+          # This shouldn't be necessary. There must be a simpler way to get this into the logs
+          self.whine "#{e.class}, #{e}\n\t#{e.backtrace.join("\n\t")} "
+          raise e
         end
-
-        response[:body] = body if body.is_a?(String)
-        raise "You have to set the response body" if response[:body].nil?
-
-        logger.debug("It took #{Time.now.to_f - start_time} sec for #{self.class} to handle request.")
-        [response[:status_code], response[:headers], response[:body]]
       end
 
       # send an error message to the log prepended by "Synfeld: " 
