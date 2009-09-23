@@ -1,13 +1,17 @@
 # base ruby requires
 require 'logger'
 
+F = ::File
+
 # gems dependencies
 require 'rubygems'
 
 require 'rack'
-require 'usher'
+require 'rack/mount'
+require 'rack/mime'
+#require 'rack/file'
 
 # my files (require_all_libs_relative_to is a bones util method in synfeld_info.rb)
-require File.join(File.dirname(__FILE__), 'synfeld_info')
+require F.join(File.dirname(__FILE__), 'synfeld_info')
 Synfeld.require_all_libs_relative_to(__FILE__)
 

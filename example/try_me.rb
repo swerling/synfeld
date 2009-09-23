@@ -7,23 +7,18 @@ class TryMe < Synfeld::App
           :logger => Logger.new(STDOUT))
   end
 
-  def router
-    return @router ||= Rack::Router.new(nil, {}) do |r|
-      r.map "/yap/:yap_variable",        :get, :to => self, :with => { :action => "yap" }
-      r.map "/my/special/route",         :get, :to => self, :with => { :action => "my_special_route" }
-      r.map "/html_test",                :get, :to => self, :with => { :action => "html_test" }
-      r.map "/haml_test",                :get, :to => self, :with => { :action => "haml_test" }
-      r.map "/erb_test",                 :get, :to => self, :with => { :action => "erb_test" }
-
-      # These next 2 have to come last
-      r.map "/:anything_else",           :get, :to => self, :with => { :action => "handle_static" } 
-      r.map "/",                         :get, :to => self, :with => { :action => "home" }
-    end
+  def add_routes
+    add_route "/yap/:yap_variable", :action => "yap" 
+    add_route "/my/special/route", :action => "my_special_route" 
+    add_route "/html_test", :action => "html_test" 
+    add_route "/haml_test", :action => "haml_test" 
+    add_route "/erb_test", :action => "erb_test" 
+    add_route '/', :action => "home" 
   end
 
   # files are looked up relative to the root directory specified in initialize
   def home
-    serve('haml_files/home.haml')
+    render('haml_files/home.haml')
   end
 
   def my_special_route
@@ -41,15 +36,15 @@ class TryMe < Synfeld::App
   end
 
   def html_test 
-    serve('html_files/html_test.html')
+    render('html_files/html_test.html')
   end
 
   def haml_test 
-    serve('haml_files/haml_test.haml', {:ran100 => Kernel.rand(100) + 1, :time => Time.now})
+    render('haml_files/haml_test.haml', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
   end
 
   def erb_test 
-    serve('erb_files/erb_test.erb', {:ran100 => Kernel.rand(100) + 1, :time => Time.now})
+    render('erb_files/erb_test.erb', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
   end
 
 

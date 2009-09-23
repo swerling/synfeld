@@ -38,10 +38,18 @@ module Synfeld
       raise "#{self.class} must implement a 'router' method that returns a Rack::Router"
     end
 
-    # Alias for #router
+    # Return self as a rackup
     def as_rack_app
-      self.router
-      # TODO: add the no_route handler here. But waiting for rack-router to settle this issue.
+      routes = Rack::Mount::RouteSet.new_without_optimizations do |set|
+        @set = set
+        self.add_routes
+        add_route %r{^.*$},  :action => "handle_static" 
+      end
+      app = Rack::Builder.new {
+        #use Rack::CommonLogger, $stderr
+        #use Rack::Reloader, 0
+        run routes
+      }.to_app
     end 
 
     # The rack #call method
@@ -58,21 +66,29 @@ module Synfeld
       self.params[:action]
     end
 
-    # Overridable method that handles missing action that was defined by a route
-    def theres_no_action
-      self.response[:body] = "Action '#{self.action}' not found in '#{self.class}'"
-      self.response[:status_code] = 500
+    def add_route(string_or_regex, opts = {})
+      raise "You have to provide an :action method to call" unless opts[:action]
+      method = (opts.delete(:method) || 'GET').to_s.upcase
+      if string_or_regex.is_a?(String)
+        regex_string = "^" + string_or_regex.gsub(/:(([^\/]+))/){|s| "(?:<#{$1}>.*)" } + "$"
+        #puts regex_string
+        regex = %r{#{regex_string}}
+      else
+        regex = string_or_regex
+      end
+      @set.add_route(self,
+                    {:path_info => regex, :request_method => method.upcase},
+                    opts)
     end
 
     protected
 
       # :stopdoc:
-
       def _call(env)
         begin
           start_time = Time.now.to_f 
           @env = env
-          @params = env['rack_router.params']
+          @params = env[ Rack::Mount::Const::RACK_ROUTING_ARGS]
           @response = {
             :status_code => 200,
             :headers => {'Content-Type' => 'text/html'},
@@ -81,13 +97,18 @@ module Synfeld
 
           action = self.action
           if self.respond_to?(action)
-            body = self.send(self.action)
+            result = self.send(self.action)
           else
-            body = theres_no_action
+            result = self.no_action
+          end
+          
+          if result.is_a?(String)
+            response[:body] = result
+          else
+            raise "You have to set the response body" if response[:body].nil?
           end
 
-          response[:body] = body if body.is_a?(String)
-          raise "You have to set the response body" if response[:body].nil?
+          response[:headers]["Content-Length"] = response[:body].size.to_s
 
           logger.debug("It took #{Time.now.to_f - start_time} sec for #{self.class} to handle request.")
           [response[:status_code], response[:headers], Array(response[:body])]
@@ -107,7 +128,21 @@ module Synfeld
 
       # :startdoc:
 
-      def serve(fn, local = {})
+      # Overridable method that handles missing action that was defined by a route
+      def no_action
+        self.response[:body] = "Action '#{self.action}' not found in '#{self.class}'"
+        self.response[:status_code] = 500
+      end
+
+      # Overridable method that handles 404
+      def no_route
+          self.response[:body] = "route not found for: '#{self.env['REQUEST_URI']}'"
+          self.response[:status_code] = 404
+      end
+
+      # Return fn. If fn is haml or erb, interprets the file. Otherwise, just try to 
+      # determine the proper mime-type and serve it up.
+      def render(fn, local = {})
         full_fn = fn
         full_fn = File.join(self.root_dir, fn) unless File.exist?(full_fn)
         if File.exist?(full_fn)
@@ -116,9 +151,9 @@ module Synfeld
           self.content_type!(ext)
 
           case ext
-          when 'html'; return serve_html(full_fn)
-          when 'haml'; return serve_haml(full_fn, local)
-          when 'erb';  return serve_erb(full_fn, local)
+          when 'html'; return render_html(full_fn)
+          when 'haml'; return render_haml(full_fn, local)
+          when 'erb';  return render_erb(full_fn, local)
           else raise "Unrecognized file type: '#{ext}'";
           end
         else
@@ -127,11 +162,11 @@ module Synfeld
 
       end
 
-      def serve_html(fn)
+      def render_html(fn)
         File.read(fn)
       end
 
-      def serve_haml(fn, locals = {})
+      def render_haml(fn, locals = {})
 
         if not defined? Haml
           begin
@@ -144,7 +179,7 @@ module Synfeld
         Haml::Engine.new(File.read(fn) ).render(Object.new, locals)
       end
 
-      def serve_erb(fn, locals = {})
+      def render_erb(fn, locals = {})
 
         if not defined? Erb
           begin
@@ -177,21 +212,19 @@ module Synfeld
 
       def content_type!(ext)
         case ext.downcase
-        when 'html'; t = 'text/html'
         when 'haml'; t = 'text/html'
-        when 'js'; t = 'text/javascript'
-        when 'css'; t = 'text/css'
-        when 'png'; t = 'image/png'
-        when 'gif'; t = 'image/gif'
-        when 'jpg'; t = 'image/jpeg'
-        when 'jpeg'; t = 'image/jpeg'
+        when 'erb'; t = 'text/html'
+#        when 'html'; t = 'text/html'
+#        when 'js'; t = 'text/javascript'
+#        when 'css'; t = 'text/css'
+#        when 'png'; t = 'image/png'
+#        when 'gif'; t = 'image/gif'
+#        when 'jpg'; t = 'image/jpeg'
+#        when 'jpeg'; t = 'image/jpeg'
+        else t = Rack::Mime.mime_type('.' + ext, 'text/plain')
         end
+        #puts("----#{ext}:" + t.inspect)
         (self.response[:headers]['Content-Type'] = t) if t
-      end
-
-      def no_route
-          self.response[:body] = "route not found for: '#{self.env['REQUEST_URI']}'"
-          self.response[:status_code] = 404
       end
 
   end # class App
