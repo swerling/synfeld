@@ -4,7 +4,7 @@ by {Steven Swerling}[http://tab-a.slot-z.net]
 
 {rdoc}[http://tab-a.slot-z.net] | {github}[http://www.github.com/swerling/synfeld]
 
-== DESCRIPTION
+== Description
 
 Synfeld is a web application framework that does practically nothing.
 
@@ -18,7 +18,7 @@ The sample app below shows pretty much everything there is to know about synfeld
 * A dymamic action where the status code, headers, and body are created 'manually.'
 * The erb demo link also demos the rendering of a partial (not visible in the code below, you have to look at the template file examples/public/erb_files/erb_test.erb).
 
-== SYNOPSIS/EXAMPLE
+== Synopsis/Example
 
 Here is an example Synfeld application (foo_app.rb):
 
@@ -26,11 +26,6 @@ Here is an example Synfeld application (foo_app.rb):
   require 'json'
 
   class FooApp < Synfeld::App
-
-    def initialize
-      super(:root_dir => File.expand_path(File.join(File.dirname(__FILE__), 'public')),
-            :logger => Logger.new(STDOUT))
-    end
 
     def add_routes
       add_route "/yap/:yap_variable", :action => "yap" 
@@ -86,17 +81,19 @@ Here is an example Synfeld application (foo_app.rb):
 And here is an example rack config, foo_app.ru:
 
   require '/path/to/foo_app.rb'
-  run FooApp.new.as_rack_app
+  use Rack::CommonLogger, logger = Logger.new('/tmp/synfeld.log')
+  foo_app = FooApp.new( :logger => logger, :root_dir => '/path/to/root/dir' )
+  run foo_app.as_rack_app
 
 Run FooApp w/ rackup or shotgun:
 
-  rackup --server=thin foo.ru -p 3000
+  rackup foo_app.ru -p 3000
 
     or
 
-  shotgun --server=thin foo.ru -p 3000
+  shotgun foo_app.ru -p 3000
 
-== FEATURES
+== Features
 
 ==== The Router
 
@@ -153,16 +150,17 @@ Rendering 'partials' is trivial and is demonstrated in the included sample appli
 
 Synfeld just gives you a thread-safe rack-based web framework that consists of just a little more than a router.  There's really not much to see.  If you want caching, security, session access, etc, it is assumed you will add those as Rack middleware. 
 
-== PROBLEMS
+== Problems
 
 None known.
 
-== REQUIREMENTS:
+== Requirements
 
+* ruby (either 1.8.X or 1.9.X)
 * ruby, rubygems, rack, rack-router
 * For rack-router, see http://github.com/carllerche/rack-router
 
-== INSTALL:
+== Install
  
   1. [install rack if necessary]
   2. gem install josh-rack-mount --source=http://gems.github.com
@@ -173,9 +171,9 @@ None known.
     you have to clone the rack-mount repo locally and just build the rack-mount gem 
     yourself)
 
-== LICENSE:
+== License
 
-(The MIT License)
+(the MIT License)
 
 Copyright (c) 2009 Steven Swerling
 

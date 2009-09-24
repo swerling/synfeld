@@ -1,7 +1,8 @@
-# base ruby requires
-require 'logger'
+F = ::File 
 
-F = ::File
+# base ruby requires
+require 'rubygems'
+require 'logger'
 
 # gems dependencies
 require 'rubygems'

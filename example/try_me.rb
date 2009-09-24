@@ -4,11 +4,6 @@ require 'json'
 # This is the sample Synfeld::App described in the README.rdoc
 class TryMe < Synfeld::App
 
-  def initialize
-    super(:root_dir => File.expand_path(File.join(File.dirname(__FILE__), 'public')),
-          :logger => Logger.new(STDOUT))
-  end
-
   def add_routes
     add_route "/yap/:yap_variable", :action => "yap" 
     add_route "/html_test", :action => "html_test" 

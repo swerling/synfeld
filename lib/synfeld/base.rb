@@ -33,9 +33,19 @@ module Synfeld # :nodoc:
     #              Note this is not the same thing as the rack access log (although you
     #              can pass that logger in if you want). Default: Logger.new(STDOUT)
     def initialize(opts = {})
-      @logger = opts[:logger] || Logger.new(STDOUT)
+
+      @logger = opts[:logger]
+      if self.logger.nil?
+        @logger = Logger.new(STDOUT)
+        puts "WARNING: Synfeld not configured with a logger, using STDOUT. Won't have much to say if running as a daemon."
+      end
+
       @root_dir = opts[:root_dir] 
-      raise "You have to pass in the location of the 'root_dir', where all the files in your synfeld app are located" if self.root_dir.nil?
+      if self.root_dir.nil?
+        raise "You have to pass in the location of the 'root_dir', where all the files in your synfeld app are located" 
+      end
+
+      Kernel.at_exit {self.whine("Alright, I'm outta here.")}
     end
     
     #
@@ -65,8 +75,7 @@ module Synfeld # :nodoc:
     #            ROUTING
     #
 
-    # This is a crucial part of synfeld. See the README for a full explanation of how to 
-    # use this method.
+    # See the README for a full explanation of how to use this method.
     def add_route(string_or_regex, opts = {})
       raise "You have to provide an :action method to call" unless opts[:action]
       method = (opts.delete(:method) || 'GET').to_s.upcase
