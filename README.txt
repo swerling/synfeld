@@ -112,7 +112,7 @@ When a Synfeld application starts up, it will call your app's 'add_routes' metho
 * The 3rd add_route example shows how you can set any additional parameters on the route by adding associations onto the end of the route (this is also shown in #my_special_route in the example application above). 
 * If you happen to have a parameter called ':method', it will determine the request method required for the route (eg. 'get', 'put', 'post'). If the :method is not passed in, 'get' is assumed.
 
-Note that rack-mount is a quickly evolving project, so the examples above may have to be tweaked a bit in the future.
+Note that rack-mount is an evolving project, so the examples above may have to be tweaked a bit in the future.
 
 ==== The Response
 
@@ -135,8 +135,6 @@ Actions are expected to side-effect the :status_code, :headers, and :body if the
 
 As the example app above shows, you can serve templated content in the form of 'haml' or 'erb' files (the #erb_test and #haml_test methods in the code above).
 
-Requests are bound to the first matching route. 
-
 Synfeld can currenty serve up the following types of static files:
 
         js, css, png, gif, jpg, jpeg, html
@@ -149,7 +147,7 @@ Additional file types can be added upon request. Or you can just look at the syn
 
 You can pass local variables to erb and haml. 
 
-Partial rendering is trival and is demonstrated in the included sample application file examples/public/erb_files/erb_test.erb.
+Rendering 'partials' is trivial and is demonstrated in the included sample application file examples/public/erb_files/erb_test.erb.
 
 ==== That's It
 
