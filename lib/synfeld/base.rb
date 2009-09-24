@@ -43,7 +43,7 @@ module Synfeld
       routes = Rack::Mount::RouteSet.new_without_optimizations do |set|
         @set = set
         self.add_routes
-        add_route %r{^.*$},  :action => "handle_static" 
+        add_route %r{^.*$},  :action => "render_static" 
       end
       app = Rack::Builder.new {
         #use Rack::CommonLogger, $stderr
@@ -119,6 +119,10 @@ module Synfeld
         end
       end
 
+      #
+      #            EXCEPTIONS
+      #
+
       # send an error message to the log prepended by "Synfeld: " 
       def whine msg
         logger.error("Synfeld laments: " + msg)
@@ -140,30 +144,13 @@ module Synfeld
           self.response[:status_code] = 404
       end
 
-      # Return fn. If fn is haml or erb, interprets the file. Otherwise, just try to 
-      # determine the proper mime-type and serve it up.
-      def render(fn, local = {})
-        full_fn = fn
-        full_fn = File.join(self.root_dir, fn) unless File.exist?(full_fn)
-        if File.exist?(full_fn)
-          ext = fn.split('.').last.downcase
-
-          self.content_type!(ext)
-
-          case ext
-          when 'html'; return render_html(full_fn)
-          when 'haml'; return render_haml(full_fn, local)
-          when 'erb';  return render_erb(full_fn, local)
-          else raise "Unrecognized file type: '#{ext}'";
-          end
-        else
-          raise "Could not find file '#{fn}' (full path '#{full_fn}')" 
-        end
-
+      def render_html(fn)
+        F.read(full_path(fn))
       end
 
-      def render_html(fn)
-        File.read(fn)
+      def render_json(json)
+        self.response[:headers]['Content-Type'] = 'text/javascript'
+        self.response[:body] = json
       end
 
       def render_haml(fn, locals = {})
@@ -176,7 +163,7 @@ module Synfeld
           end
         end
 
-        Haml::Engine.new(File.read(fn) ).render(Object.new, locals)
+        Haml::Engine.new(F.read(full_path(fn)) ).render(Object.new, locals)
       end
 
       def render_erb(fn, locals = {})
@@ -189,7 +176,7 @@ module Synfeld
           end
         end
 
-        template = ERB.new File.read(fn)
+        template = ERB.new F.read(full_path(fn))
 
         bind = binding
         locals.each do |n,v| 
@@ -199,16 +186,20 @@ module Synfeld
         template.result(bind)
       end
 
-      def handle_static
-        fn = File.expand_path(File.join(root_dir, self.env['REQUEST_URI']))
+      def render_static
+        fn = F.expand_path(F.join(root_dir, self.env['REQUEST_URI']))
         #puts fn # dbg
-        if File.exist?(fn) and not File.directory?(fn)
+        if F.exist?(fn) and not F.directory?(fn)
           self.content_type!(fn.split('.').last)
-          File.read(fn)
+          F.read(fn)
         else
           return self.no_route
         end
       end
+
+      #
+      #            UTIL
+      #
 
       def content_type!(ext)
         case ext.downcase
@@ -225,6 +216,16 @@ module Synfeld
         end
         #puts("----#{ext}:" + t.inspect)
         (self.response[:headers]['Content-Type'] = t) if t
+      end
+
+      def full_path(fn)
+        if F.exist?(fn)
+          return fn
+        elsif F.exist?(full_fn = F.join(self.root_dir, fn))
+          return full_fn
+        else
+          raise "Could not find file '#{fn}' (full path '#{full_fn}')" 
+        end
       end
 
   end # class App

@@ -8,15 +8,15 @@ by {Steven Swerling}[http://tab-a.slot-z.net]
 
 Synfeld is a web application framework that does practically nothing.
 
-Basically this is just a tiny wrapper for the Rack::Router (see http://github.com/carllerche/rack-router). If you want a web framework that is mostly just going to serve up json blobs, and occasionally serve up some simple content (eg. for help files) and media, Synfeld makes that easy. If you need session variables, a mailer, uploading, etc, look elsewhere.
+Synfeld is little more than a small wrapper for the Rack::Mount (see http://github.com/josh/rack-mount). If you want a web framework that is mostly just going to serve up json blobs, and occasionally serve up some simple content (eg. for help files) and media, Synfeld makes that easy. 
 
-The sample app below shows pretty much everything that synfeld can do. 
-
-Very alpha-ish stuff here. Seems to work though.
+The sample app below shows pretty much everything that synfeld can do: a straighforward router table along with simple rendering of erb, haml, html, json, and static files. In the case of erb and haml, passing variables into the template is demonstrated.
 
 == SYNOPSIS:
 
 Here is an example Synfeld application (foo_app.rb):
+
+  require 'synfeld'
 
   class FooApp < Synfeld::App
 
@@ -25,23 +25,21 @@ Here is an example Synfeld application (foo_app.rb):
             :logger => Logger.new(STDOUT))
     end
 
-    def router
-      return @router ||= Rack::Router.new(nil, {}) do |r|
-        r.map "/yap/:yap_variable",        :get, :to => self, :with => { :action => "yap" }
-        r.map "/my/special/route",         :get, :to => self, :with => { :action => "my_special_route" }
-        r.map "/html_test",                :get, :to => self, :with => { :action => "html_test" }
-        r.map "/haml_test",                :get, :to => self, :with => { :action => "haml_test" }
-        r.map "/erb_test",                 :get, :to => self, :with => { :action => "erb_test" }
-
-        # These next 2 have to come last
-        r.map "/:anything_else",           :get, :to => self, :with => { :action => "handle_static" } 
-        r.map "/",                         :get, :to => self, :with => { :action => "home" }
-      end
+    def add_routes
+      add_route "/yap/:yap_variable", :action => "yap" 
+      add_route "/html_test", :action => "html_test" 
+      add_route "/haml_test", :action => "haml_test" 
+      add_route "/erb_test", :action => "erb_test" 
+      add_route "/my/special/route", :action => "my_special_route", 
+                                    :extra_parm1 => 'really', 
+                                    :extra_parm2 => 'truly' 
+      add_route '/json_blob', :action => "json_blob" 
+      add_route '/', :action => "home" 
     end
 
     # files are looked up relative to the root directory specified in initialize
     def home
-      serve('haml_files/home.haml')
+      render_haml('haml_files/home.haml')
     end
 
     def my_special_route
@@ -49,7 +47,8 @@ Here is an example Synfeld application (foo_app.rb):
       self.response[:headers]['Content-Type'] = 'text/html'
       self.response[:body] = <<-HTML
         <html>
-          <body>I'm <i>special</i>.</body>
+          <body>I'm <i>special</i>, 
+          #{self.params[:extra_parm1]} and #{self.params[:extra_parm2]}</body>
         </html>
       HTML
     end
@@ -59,17 +58,21 @@ Here is an example Synfeld application (foo_app.rb):
     end
 
     def html_test 
-      serve('html_files/html_test.html')
+      render_html('html_files/html_test.html')
     end
 
     def haml_test 
-      serve('haml_files/haml_test.haml', {:ran100 => Kernel.rand(100) + 1, :time => Time.now})
+      render_haml('haml_files/haml_test.haml', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
     end
 
     def erb_test 
-      serve('erb_files/erb_test.erb', {:ran100 => Kernel.rand(100) + 1, :time => Time.now})
+      render_erb('erb_files/erb_test.erb', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
     end
 
+    def json_blob
+      hash = {:desc => 'here is the alphabet', :alphabet => ('a'..'z').collect{|ch|ch} }
+      render_json hash.to_json
+    end
 
   end
 

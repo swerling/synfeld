@@ -9,7 +9,6 @@ require 'rubygems'
 require 'rack'
 require 'rack/mount'
 require 'rack/mime'
-#require 'rack/file'
 
 # my files (require_all_libs_relative_to is a bones util method in synfeld_info.rb)
 require F.join(File.dirname(__FILE__), 'synfeld_info')
