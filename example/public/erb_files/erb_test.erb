@@ -3,8 +3,14 @@
     <div>
       <h3> Here is an erb test</h3>
       Here is the time: <%= time %>
-      <br/>ran100: <%= ran100 %>
+      <br/>ran100: <%= ran100 %> (local variable passed in)
       <br/><a href="/">home</a>
+      <br/>
+      <br/>
+      Here is the home page rendered as a partial:
+      <div style="margin-left: 50px">
+        <%= render_haml('haml_files/home.haml') %>
+     </div>
     </div>
   </body>
 </html>

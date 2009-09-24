@@ -48,13 +48,21 @@ task :myclobber => [:clobber] do
   sh "rm -rf #{File.join(mydir, 'ext/*.so')}"
   sh "rm -rf #{File.join(mydir, 'ext/Makefile')}"
   sh "rm -rf #{File.join(mydir, 'ext/Makefile')}"
+  sh "cp #{File.join(mydir, 'README.rdoc')} #{File.join(mydir, 'README.txt')}" # concession to bones
 end
 task :mypackage => [:myclobber] do
   Rake::Task['gem:package'].invoke
 end
 task :mydoc => [:myclobber] do
   FileUtils.rm_f doc_dir()
-  sh "cd #{this_dir()} && rdoc -o rdoc --inline-source --format=html -T hanna README.rdoc lib/**/*.rb" 
+  #sh "cd #{this_dir()} && rdoc -o rdoc --inline-source --format=html -T hanna README.rdoc lib/**/*.rb" 
+  this_dir = File.dirname(__FILE__) + '/'
+  files = []
+  files += Dir[File.join(this_dir, 'lib/**/*.rb')].map{|fn| fn.gsub(this_dir,'')}
+  files += Dir[File.join(this_dir, 'example/**/*.*')].map{|fn| fn.gsub(this_dir,'')}
+  files += ['README.rdoc']
+  files = files.reject{|fn| fn =~ /jpg/ }.sort
+  sh "cd #{this_dir()} && rdoc -o rdoc --inline-source #{files.flatten.join(" ")}" 
 end
 task :taba => [:mydoc] do
   this_dir = File.join(File.dirname(__FILE__))

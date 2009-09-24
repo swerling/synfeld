@@ -1,22 +1,29 @@
-synfeld
+== *Synfeld*
  
 by {Steven Swerling}[http://tab-a.slot-z.net]
 
 {rdoc}[http://tab-a.slot-z.net] | {github}[http://www.github.com/swerling/synfeld]
 
-== DESCRIPTION:
+== DESCRIPTION
 
 Synfeld is a web application framework that does practically nothing.
 
-Basically this is just a tiny wrapper for the Rack::Router (see http://github.com/carllerche/rack-router). If you want a web framework that is mostly just going to serve up json blobs, and occasionally serve up some simple content (eg. for help files) and media, Synfeld makes that easy. If you need session variables, a mailer, uploading, etc, look elsewhere.
+Synfeld is little more than a small wrapper for Rack::Mount (see http://github.com/josh/rack-mount). If you want a web framework that is mostly just going to serve up json blobs, and occasionally serve up some simple content (eg. help files) and media, Synfeld makes that easy. 
 
-The sample app below shows pretty much everything that synfeld can do. 
+The sample app below shows pretty much everything there is to know about synfeld, in particular:
 
-Very alpha-ish stuff here. Seems to work though.
+* How to define routes.
+* Simple rendering of erb, haml, html, json, and static files.
+* In the case of erb and haml, passing variables into the template is demonstrated.
+* A dymamic action where the status code, headers, and body are created 'manually.'
+* The erb demo link also demos the rendering of a partial (not visible in the code below, you have to look at the template file examples/public/erb_files/erb_test.erb).
 
-== SYNOPSIS:
+== SYNOPSIS/EXAMPLE
 
 Here is an example Synfeld application (foo_app.rb):
+
+  require 'synfeld'
+  require 'json'
 
   class FooApp < Synfeld::App
 
@@ -25,33 +32,21 @@ Here is an example Synfeld application (foo_app.rb):
             :logger => Logger.new(STDOUT))
     end
 
-    def router
-      return @router ||= Rack::Router.new(nil, {}) do |r|
-        r.map "/yap/:yap_variable",        :get, :to => self, :with => { :action => "yap" }
-        r.map "/my/special/route",         :get, :to => self, :with => { :action => "my_special_route" }
-        r.map "/html_test",                :get, :to => self, :with => { :action => "html_test" }
-        r.map "/haml_test",                :get, :to => self, :with => { :action => "haml_test" }
-        r.map "/erb_test",                 :get, :to => self, :with => { :action => "erb_test" }
-
-        # These next 2 have to come last
-        r.map "/:anything_else",           :get, :to => self, :with => { :action => "handle_static" } 
-        r.map "/",                         :get, :to => self, :with => { :action => "home" }
-      end
+    def add_routes
+      add_route "/yap/:yap_variable", :action => "yap" 
+      add_route "/html_test", :action => "html_test" 
+      add_route "/haml_test", :action => "haml_test" 
+      add_route "/erb_test",  :action => "erb_test" 
+      add_route '/json_blob', :action => "json_blob" 
+      add_route "/my/special/route", :action => "my_special_route", 
+                                     :extra_parm1 => 'really', 
+                                     :extra_parm2 => 'truly' 
+      add_route '/', :action => "home" 
     end
 
     # files are looked up relative to the root directory specified in initialize
     def home
-      serve('haml_files/home.haml')
-    end
-
-    def my_special_route
-      self.response[:status_code] = 200
-      self.response[:headers]['Content-Type'] = 'text/html'
-      self.response[:body] = <<-HTML
-        <html>
-          <body>I'm <i>special</i>.</body>
-        </html>
-      HTML
+      render_haml('haml_files/home.haml')
     end
 
     def yap
@@ -59,17 +54,32 @@ Here is an example Synfeld application (foo_app.rb):
     end
 
     def html_test 
-      serve('html_files/html_test.html')
+      render_html('html_files/html_test.html')
     end
 
     def haml_test 
-      serve('haml_files/haml_test.haml', {:ran100 => Kernel.rand(100) + 1, :time => Time.now})
+      render_haml('haml_files/haml_test.haml', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
     end
 
     def erb_test 
-      serve('erb_files/erb_test.erb', {:ran100 => Kernel.rand(100) + 1, :time => Time.now})
+      render_erb('erb_files/erb_test.erb', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
     end
 
+    def json_blob
+      hash = {:desc => 'here is the alphabet', :alphabet => ('a'..'z').collect{|ch|ch} }
+      render_json hash.to_json
+    end
+
+    def my_special_route
+      self.response[:status_code] = 200
+      self.response[:headers]['Content-Type'] = 'text/html'
+      self.response[:body] = <<-HTML
+        <html>
+          <body>I'm <i>special</i>, 
+          #{self.params[:extra_parm1]} and #{self.params[:extra_parm2]}</body>
+        </html>
+      HTML
+    end
 
   end
 
@@ -88,11 +98,29 @@ Run FooApp w/ rackup or shotgun:
 
 == FEATURES
 
+==== The Router
+
+When a Synfeld application starts up, it will call your app's 'add_routes' method, where you have to create your routes using the #add_route method. Example calls to add_route:
+
+1.  add_route %r{/some/path/(?:<somevar>.*)}, :action => "haml_test"
+2.  add_route "/some/otherpath/:somevar", :action => "haml_test"
+3.  add_route "/yet/anotherpath/:var", :action => "haml_test", :method => 'post', :furthermore => 'art is dead'
+
+* At minimum, you have to provide the route and the :action to #add_route. 
+* When a route is passed as a regex (the 1st add_route line above), it is passed straight through to rackmount as is, so rackmount's rules apply. 
+* When using the convenience notation of the second add_route line above, the '/some/path/:somevar' is converted to a rackmount regex route under the covers, and :somevar will be passed to your app as a param (this is shown in the example code's #yap and #my_special_route methods). 
+* The 3rd add_route example shows how you can set any additional parameters on the route by adding associations onto the end of the route (this is also shown in #my_special_route in the example application above). 
+* If you happen to have a parameter called ':method', it will determine the request method required for the route (eg. 'get', 'put', 'post'). If the :method is not passed in, 'get' is assumed.
+
+Note that rack-mount is a quickly evolving project, so the examples above may have to be tweaked a bit in the future.
+
+==== The Response
+
 When a Synfeld application handles a rack request, it 
 
-1. Duplicates self (so it's thread safe) 
-2. Sets @response, @params, @env (the rack env) 
-3. Calls the action that Rack::Router route that matched. If the action returns a String, that is used for the @response[:body]
+1. Duplicates itself (so it's thread safe) 
+2. Sets @response, @params, @env (@env is just the rack env) 
+3. Calls the action that the route that matched. 
 
 The @response is a hash used to return the rack status code, headers hash, and body.  Actions may do what they please with the response. Default response:
 
@@ -103,23 +131,29 @@ The @response is a hash used to return the rack status code, headers hash, and b
     }
 
 
-Actions are expected to side-effect the :status_code, :headers, and :body if the defaults are not appropriate. As a convenience, if an action returns a string, it is assumed that that string is the :body. An exception is thrown if the :body is not set to something.
+Actions are expected to side-effect the :status_code, :headers, and :body if the defaults are not appropriate. As a convenience, if an action returns a string, it is assumed that that string is to be used as the response[:body]. An exception is thrown if the :body is not set to something. The 'Content-Length' header will be derived from the body's size.
 
-As the example app above shows, you can "serve" templated content in the form of 'haml' or 'erb' files.
+As the example app above shows, you can serve templated content in the form of 'haml' or 'erb' files (the #erb_test and #haml_test methods in the code above).
 
-Requests are bound to the first matching route. The 'handle_static' action considers the request path to be a path to a file relative to the 'root_dir' specified in initialize (see example app below). 
+Requests are bound to the first matching route. 
 
-Can currenty serve up the following types of static files:
+Synfeld can currenty serve up the following types of static files:
 
         js, css, png, gif, jpg, jpeg, html
 
-Can currently render the following dynamic content:
+Synfeld can currently render the following dynamic content:
 
-        erb, haml
+        erb, haml, json
 
-Synfeld does not do partials, but you can set local variables for dynamic content.
+Additional file types can be added upon request. Or you can just look at the synfeld code, which is tiny, then roll your own render method.
 
-That's it. Really not much to see here.  Just gives you a thread-safe rack-based web framework that consists of little more than a router.
+You can pass local variables to erb and haml. 
+
+Partial rendering is trival and is demonstrated in the included sample application file examples/public/erb_files/erb_test.erb.
+
+==== That's It
+
+Synfeld just gives you a thread-safe rack-based web framework that consists of just a little more than a router.  There's really not much to see.  If you want caching, security, session access, etc, it is assumed you will add those as Rack middleware. 
 
 == PROBLEMS
 
@@ -131,15 +165,15 @@ None known.
 * For rack-router, see http://github.com/carllerche/rack-router
 
 == INSTALL:
+ 
+  1. [install rack if necessary]
+  2. gem install josh-rack-mount --source=http://gems.github.com
+  3. gem install swerling-synfeld --source http://gems.github.com
 
-  First install rack and rack-router. 
-  
-  There's no gem for rack-router at the moment,
-  to you will have to clone it and build it yourself. 
-  
-  Then:
-
-    gem install swerling-synfeld --source http://gems.github.com
+    (note: I noticed sometimes josh-rack-mount will complain about rack version
+    not being high enough, even if you are already on version 1.0.0. If that happens,
+    you have to clone the rack-mount repo locally and just build the rack-mount gem 
+    yourself)
 
 == LICENSE:
 
@@ -165,3 +199,4 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
