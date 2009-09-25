@@ -20,8 +20,9 @@ end
 def add_a_route(opts = {})
   method = (opts.delete(:method) || 'GET').upcase
   string_or_regex = opts.delete(:path) || raise("You have to provide a :path")
+  colon = (RUBY_VERSION =~ /^1.8/)? ':' : ''
   if string_or_regex.is_a?(String)
-    regex_string = "^" + string_or_regex.gsub(/:(([^\/]+))/){|s| "(?:<#{$1}>.*)" } + "$"
+    regex_string = "^" + string_or_regex.gsub(/:(([^\/]+))/){|s| "(?#{colon}<#{$1}>.*)" } + "$"
     puts regex_string
     regex = %r{#{regex_string}}
   else
@@ -35,6 +36,8 @@ end
 basic_set = Rack::Mount::RouteSet.new_without_optimizations do |set|
   @set = set
 #  set.add_route(@app, { :path_info => %r{^/hello/(?:<hi>.*)$}, :request_method => 'GET' }, 
+#                     { :controller => 'spscontroller_a', :action => 'spsaction_a' })
+#  set.add_route(@app, { :path_info => %r{^/hi/(?<ho>.*)$}, :request_method => 'GET' }, 
 #                     { :controller => 'spscontroller_a', :action => 'spsaction_a' })
 #  set.add_route(@app, { :path_info => '/ho/steve', :request_method => 'GET' }, 
 #                     { :controller => 'spscontroller_a', :action => 'spsaction_a' })

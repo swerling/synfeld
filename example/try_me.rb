@@ -9,7 +9,7 @@ class TryMe < Synfeld::App
     add_route "/html_test", :action => "html_test" 
     add_route "/haml_test", :action => "haml_test" 
     add_route "/erb_test",  :action => "erb_test" 
-    add_route '/json_blob', :action => "json_blob" 
+    add_route '/alphabet.:format', :action => "alphabet" 
     add_route "/my/special/route", :action => "my_special_route", 
                                    :extra_parm1 => 'really', 
                                    :extra_parm2 => 'truly' 
@@ -37,9 +37,17 @@ class TryMe < Synfeld::App
     render_erb('erb_files/erb_test.erb', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
   end
 
-  def json_blob
-    hash = {:desc => 'here is the alphabet', :alphabet => ('a'..'z').collect{|ch|ch} }
-    render_json hash.to_json
+  def alphabet
+    alphabet = ('a'..'z').collect{|ch|ch} 
+    case params[:format]
+    when 'html'
+      return "<html><body>#{alphabet.join("<br/>")}</body></html>"
+    when 'json'
+      hash = {:desc => 'here is the alphabet', :alphabet => alphabet}
+      render_json hash.to_json
+    else
+      raise "Format not recognized: #{params[:format]}"
+    end
   end
 
   def my_special_route
@@ -52,7 +60,6 @@ class TryMe < Synfeld::App
       </html>
     HTML
   end
-
 
 end
 
