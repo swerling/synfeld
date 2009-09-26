@@ -2,21 +2,25 @@
 
 Gem::Specification.new do |s|
   s.name = %q{synfeld}
-  s.version = "0.0.2"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Steven Swerling"]
-  s.date = %q{2009-09-12}
+  s.date = %q{2009-09-25}
   s.description = %q{Synfeld is a web application framework that does practically nothing.
 
-Basically this is just a tiny wrapper for the Rack::Router (see http://github.com/carllerche/rack-router). If you want a web framework that is mostly just going to serve up json blobs, and occasionally serve up some simple content (eg. for help files) and media, Synfeld makes that easy. If you need session variables, a mailer, uploading, etc, look elsewhere.
+Synfeld is little more than a small wrapper for Rack::Mount (see http://github.com/josh/rack-mount). If you want a web framework that is mostly just going to serve up json blobs, and occasionally serve up some simple content (eg. help files) and media, Synfeld makes that easy. 
 
-The sample app below shows pretty much everything that synfeld can do. 
+The sample app below shows pretty much everything there is to know about synfeld, in particular:
 
-Very alpha-ish stuff here. Seems to work though.}
+* How to define routes.
+* Simple rendering of erb, haml, html, json, and static files.
+* In the case of erb and haml, passing variables into the template is demonstrated.
+* A dymamic action where the status code, headers, and body are created 'manually.'
+* The erb demo link also demos the rendering of a partial (not visible in the code below, you have to look at the template file examples/public/erb_files/erb_test.erb).}
   s.email = %q{sswerling@yahoo.com}
   s.extra_rdoc_files = ["History.txt", "README.rdoc", "README.txt"]
-  s.files = [".gitignore", "History.txt", "README.rdoc", "README.txt", "Rakefile", "TODO", "example/public/erb_files/erb_test.erb", "example/public/haml_files/haml_test.haml", "example/public/haml_files/home.haml", "example/public/html_files/html_test.html", "example/try_me.rb", "example/try_me.ru", "lib/synfeld.rb", "lib/synfeld/base.rb", "lib/synfeld_info.rb", "spec/spec_helper.rb", "spec/synfeld_spec.rb", "synfeld.gemspec", "test/test_synfeld.rb"]
+  s.files = [".gitignore", "History.txt", "README.rdoc", "README.txt", "Rakefile", "TODO", "TODO-rack-mount", "example/public/erb_files/erb_test.erb", "example/public/haml_files/haml_test.haml", "example/public/haml_files/home.haml", "example/public/html_files/html_test.html", "example/public/images/beef_interstellar_thm.jpg", "example/public/images/rails.png", "example/try_me.rb", "example/try_me.ru", "lib/synfeld.rb", "lib/synfeld/base.rb", "lib/synfeld_info.rb", "rackmount-test.ru", "spec/spec_helper.rb", "spec/synfeld_spec.rb", "synfeld.gemspec", "test/test_synfeld.rb"]
   s.homepage = %q{http://tab-a.slot-z.net}
   s.rdoc_options = ["--inline-source", "--main", "README.txt"]
   s.require_paths = ["lib"]
