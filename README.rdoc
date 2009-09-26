@@ -15,7 +15,8 @@ The sample app below shows pretty much everything there is to know about synfeld
 * How to define routes.
 * Simple rendering of erb, haml, html, json, and static files.
 * In the case of erb and haml, passing variables into the template is demonstrated.
-* A dymamic action where the status code, headers, and body are created 'manually.'
+* A dynamic action where the status code, headers, and body are created 'manually' (/my/special/route below)
+* A simple way of creating format sensitive routes (/alphabet.html vs. /alphabet.json)
 * The erb demo link also demos the rendering of a partial (not visible in the code below, you have to look at the template file examples/public/erb_files/erb_test.erb).
 
 == Synopsis/Example
@@ -32,10 +33,10 @@ Here is an example Synfeld application (foo_app.rb):
       add_route "/html_test", :action => "html_test" 
       add_route "/haml_test", :action => "haml_test" 
       add_route "/erb_test",  :action => "erb_test" 
-      add_route '/json_blob', :action => "json_blob" 
+      add_route '/alphabet.:format', :action => "alphabet" 
       add_route "/my/special/route", :action => "my_special_route", 
-                                     :extra_parm1 => 'really', 
-                                     :extra_parm2 => 'truly' 
+                                    :extra_parm1 => 'really', 
+                                    :extra_parm2 => 'truly' 
       add_route '/', :action => "home" 
     end
 
@@ -60,9 +61,17 @@ Here is an example Synfeld application (foo_app.rb):
       render_erb('erb_files/erb_test.erb', :ran100 => Kernel.rand(100) + 1, :time => Time.now)
     end
 
-    def json_blob
-      hash = {:desc => 'here is the alphabet', :alphabet => ('a'..'z').collect{|ch|ch} }
-      render_json hash.to_json
+    def alphabet
+      alphabet = ('a'..'z').collect{|ch|ch} 
+      case params[:format]
+      when 'html'
+        return "<html><body>#{alphabet.join("<br/>")}</body></html>"
+      when 'json'
+        hash = {:desc => 'here is the alphabet', :alphabet => alphabet}
+        render_json hash.to_json
+      else
+        raise "Format not recognized: #{params[:format]}"
+      end
     end
 
     def my_special_route
@@ -75,7 +84,6 @@ Here is an example Synfeld application (foo_app.rb):
         </html>
       HTML
     end
-
   end
 
 And here is an example rack config, foo_app.ru:
