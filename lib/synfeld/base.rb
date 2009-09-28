@@ -54,16 +54,13 @@ module Synfeld # :nodoc:
 
     # Return self as a rackup-able rack application.
     def as_rack_app
-      routes = Rack::Mount::RouteSet.new_without_optimizations do |set|
+      #routes = Rack::Mount::RouteSet.new_without_optimizations do |set|
+      routes = Rack::Mount::RouteSet.new do |set|
         @set = set
         self.add_routes
         add_route %r{^.*$},  :action => "render_static" 
       end
-      app = Rack::Builder.new {
-        #use Rack::CommonLogger, $stderr
-        #use Rack::Reloader, 0
-        run routes
-      }.to_app
+      return routes
     end 
 
     # The rack #call method
