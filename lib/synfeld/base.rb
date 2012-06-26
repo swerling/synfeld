@@ -2,9 +2,9 @@ module Synfeld # :nodoc:
 
   #
   # See the synopsis section of README.rdoc for usage.
-  # 
-  # See the README.rdoc for an overview of an Synfeld::App, and see the Rack::Mount project for 
-  # more information on Rack::Mount style routing. 
+  #
+  # See the README.rdoc for an overview of an Synfeld::App, and see the Rack::Mount project for
+  # more information on Rack::Mount style routing.
   #
   # Variables of note:
   #
@@ -40,14 +40,14 @@ module Synfeld # :nodoc:
         puts "WARNING: Synfeld not configured with a logger, using STDOUT. Won't have much to say if running as a daemon."
       end
 
-      @root_dir = opts[:root_dir] 
+      @root_dir = opts[:root_dir]
       if self.root_dir.nil?
-        raise "You have to pass in the location of the 'root_dir', where all the files in your synfeld app are located" 
+        raise "You have to pass in the location of the 'root_dir', where all the files in your synfeld app are located"
       end
 
       Kernel.at_exit {self.whine("Alright, I'm outta here.")}
     end
-    
+
     #
     #            RACK PLUMBING
     #
@@ -58,10 +58,10 @@ module Synfeld # :nodoc:
       routes = Rack::Mount::RouteSet.new do |set|
         @set = set
         self.add_routes
-        add_route %r{^.*$},  :action => "render_static" 
+        add_route %r{^.*$},  :action => "render_static"
       end
       return routes
-    end 
+    end
 
     # The rack #call method
     def call(env)
@@ -108,9 +108,9 @@ module Synfeld # :nodoc:
 
       def _call(env) # :nodoc:
         begin
-          start_time = Time.now.to_f 
+          start_time = Time.now.to_f
           @env = env
-          @params = env[ Rack::Mount::Const::RACK_ROUTING_ARGS ]
+          @params = env['rack.routing_args']
           @response = {
             :status_code => 200,
             :headers => {'Content-Type' => 'text/html'},
@@ -123,7 +123,7 @@ module Synfeld # :nodoc:
           else
             result = self.no_action
           end
-          
+
           if result.is_a?(String)
             response[:body] = result
           else
@@ -149,7 +149,7 @@ module Synfeld # :nodoc:
       #            EXCEPTIONS
       #
 
-      # send an error message to the log prepended by "Synfeld: " 
+      # send an error message to the log prepended by "Synfeld: "
       def whine msg
         logger.error("Synfeld laments: " + msg)
         return msg
@@ -177,7 +177,7 @@ module Synfeld # :nodoc:
         F.read(full_path(fn))
       end
 
-      # Serve up a blob of json (just sets Content-Type to 'text/javascript' and 
+      # Serve up a blob of json (just sets Content-Type to 'text/javascript' and
       # sets the body to the json passed in to this method).
       def render_json(json)
         self.response[:headers]['Content-Type'] = 'text/javascript'
@@ -214,8 +214,8 @@ module Synfeld # :nodoc:
         template = ERB.new F.read(full_path(fn))
 
         bind = binding
-        locals.each do |n,v| 
-          raise "Locals must be symbols. Not a symbol: #{n.inspect}" unless n.is_a?(Symbol) 
+        locals.each do |n,v|
+          raise "Locals must be symbols. Not a symbol: #{n.inspect}" unless n.is_a?(Symbol)
           eval("#{n} = locals[:#{n}]", bind)
         end
         template.result(bind)
@@ -258,18 +258,18 @@ module Synfeld # :nodoc:
       end
 
       # Return fn if a file by that name exists. If not, concatenate the @root_dir with the fn, and
-      # return that if it exists. Raise if the actual file cannot be determined. 
+      # return that if it exists. Raise if the actual file cannot be determined.
       #
       # NOTE: no effort is made to protect access to files outside of your application's root
       # dir. If you permit filepaths as request parameters, then it is up to you to make sure
-      # that they do not point to some sensitive part of your file-system. 
+      # that they do not point to some sensitive part of your file-system.
       def full_path(fn)
         if F.exist?(fn)
           return fn
         elsif F.exist?(full_fn = F.join(self.root_dir, fn))
           return full_fn
         else
-          raise "Could not find file '#{fn}' (full path '#{full_fn}')" 
+          raise "Could not find file '#{fn}' (full path '#{full_fn}')"
         end
       end
 
