@@ -44,6 +44,9 @@ code below, you have to look at the template file
   s.require_paths = ["lib"]
   s.test_files = ["test/test_synfeld.rb"]
 
-  s.add_development_dependency "rake"
-  s.add_dependency 'rack' '>=0'
+  #s.add_development_dependency "rake"
+
+  # Cant seem to get bundler to work if I add these 2:
+  #$s.add_dependency 'rack' '>=1.4.1'
+  #$s.add_dependency 'rack-mount' '>=0.8.3'
 end

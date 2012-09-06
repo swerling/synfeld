@@ -6,7 +6,7 @@ require "bundler/gem_tasks"
 desc "Generate RDoc documentation"
 task :rdoc do
   sh(*%w{rbenv exec rdoc --line-numbers --main README.rdoc
-              --title 'Supermodel-moto' --charset utf-8 -U -o doc} +
+              --title 'synfeld' --charset utf-8 -U -o doc} +
               %w{README.rdoc} +
               Dir["lib/**/*.rb"])
 end
@@ -54,14 +54,14 @@ end
 #end
 #task :mydoc => [:myclobber] do
 #  FileUtils.rm_f doc_dir()
-#  #sh "cd #{this_dir()} && rdoc -o rdoc --inline-source --format=html -T hanna README.rdoc lib/**/*.rb" 
+#  #sh "cd #{this_dir()} && rdoc -o rdoc --inline-source --format=html -T hanna README.rdoc lib/**/*.rb"
 #  this_dir = File.dirname(__FILE__) + '/'
 #  files = []
 #  files += Dir[File.join(this_dir, 'lib/**/*.rb')].map{|fn| fn.gsub(this_dir,'')}
 #  files += Dir[File.join(this_dir, 'example/**/*.*')].map{|fn| fn.gsub(this_dir,'')}
 #  files += ['README.rdoc']
 #  files = files.reject{|fn| fn =~ /jpg/ }.sort
-#  sh "cd #{this_dir()} && rdoc -o rdoc --inline-source #{files.flatten.join(" ")}" 
+#  sh "cd #{this_dir()} && rdoc -o rdoc --inline-source #{files.flatten.join(" ")}"
 #end
 #task :taba => [:mydoc] do
 #  this_dir = File.join(File.dirname(__FILE__))
