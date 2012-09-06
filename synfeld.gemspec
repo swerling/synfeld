@@ -1,16 +1,16 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{synfeld}
-  s.version = "0.0.4"
+  s.name = "synfeld"
+  s.version = "0.0.5"
   s.platform    = Gem::Platform::RUBY
   s.authors = ["Steven Swerling"]
-  s.email = %q{sswerling@yahoo.com}
-  s.homepage = %q{http://tab-a.slot-z.net}
-  s.summary = %q{Synfeld is a web application framework that does practically nothing}
+  s.email = "sswerling@yahoo.com"
+  s.homepage = "http://github.com/swerling/synfeld"
+  s.summary = "Synfeld is a web application framework that does practically nothing"
+  s.rubyforge_project = "synfeld"
 
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.date = %q{2009-09-26}
+  #s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.description = %q{
 Synfeld is a web application framework that does practically nothing.
 
