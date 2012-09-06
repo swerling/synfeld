@@ -164,20 +164,12 @@ None known.
 
 == Requirements
 
-* ruby (either 1.8.X or 1.9.X)
-* ruby, rubygems, rack, rack-router
-* For rack-router, see http://github.com/carllerche/rack-router
+* ruby 1.9.X
+* ruby, rack, rack-mount
 
 == Install
  
-  1. [install rack if necessary]
-  2. gem install josh-rack-mount --source=http://gems.github.com
-  3. gem install swerling-synfeld --source http://gems.github.com
-
-    (note: I noticed sometimes josh-rack-mount will complain about rack version
-    not being high enough, even if you are already on version 1.0.0. If that happens,
-    you have to clone the rack-mount repo locally and just build the rack-mount gem 
-    yourself)
+ gem install synfeld
 
 == License
 
