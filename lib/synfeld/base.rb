@@ -72,17 +72,14 @@ module Synfeld # :nodoc:
     #            ROUTING
     #
 
-    @@__regex_colon = (RUBY_VERSION =~ /^1.8/)? ':' : '' # :nodoc:
-
     # See the README for a full explanation of how to use this method.
     def add_route(string_or_regex, opts = {})
       raise "You have to provide an :action method to call" unless opts[:action]
       method = (opts.delete(:method) || 'GET').to_s.upcase
-      # Adapt string_or_regex into a rack-mount regex route. If it is a string, convert it to a
-      # rack-mount compatable regex. In paths that look like /some/:var/in/path, convert the ':var'
-      # bits to rack-mount variables.
+      # If a string, convert it to a rack-mount compatable regex, eg
+      #    /some/:var/in/path => /some/(?<var>.*)/in/path
       if string_or_regex.is_a?(String)
-        regex_string = "^" + string_or_regex.gsub(/:(([^\/]+))/){|s| "(?#{@@__regex_colon}<#{$1}>.*)" } + "$"
+        regex_string = "^" + string_or_regex.gsub(/:(([^\/]+))/){|s| "(?<#{$1}>.*)" } + "$"
         regex = %r{#{regex_string}}
         #puts regex_string # dbg
       else

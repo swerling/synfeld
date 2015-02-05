@@ -1,1 +1,2 @@
-Create a sourceforge gem and move all the docs over there from slot-z.com.
+routes busted since switch to rack-mount:
+  Try sinai's 'refresh' routes to see.
