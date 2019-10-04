@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = "synfeld"
-  s.version = "0.0.7"
+  s.version = "0.0.8"
   s.platform    = Gem::Platform::RUBY
   s.authors = ["Steven Swerling"]
   s.email = "sswerling@yahoo.com"
@@ -44,10 +44,10 @@ code below, you have to look at the template file
   s.require_paths = ["lib"]
   s.test_files = ["test/test_synfeld.rb"]
 
-  #s.add_development_dependency "rake"
+  s.add_development_dependency "rspec"
 
   # Cant seem to get bundler to work if I add these 2:
-  s.add_dependency 'rack', '~> 1.4.1'
+  s.add_dependency 'rack', '~> 2.0.7'
   s.add_dependency 'rack-mount', '~> 0.8.3'
   s.add_dependency 'haml', '~> 3.1.6'
 
